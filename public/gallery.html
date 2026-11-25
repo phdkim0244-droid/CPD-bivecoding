@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>작품 갤러리</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+  .gallery { max-width: 1400px; margin: 0 auto; padding: 20px 16px 60px; }
+  .gallery header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+  .gallery h1 { margin: 0; font-size: 1.5rem; margin-right: auto; }
+  .gallery h1 small { color: var(--muted); font-weight: 500; font-size: 0.95rem; margin-left: 8px; }
+  .gallery .code-form { display: flex; gap: 8px; }
+  .gallery .code-form input { padding: 8px 12px; border: 1px solid var(--border); border-radius: 10px; width: 140px; text-transform: uppercase; letter-spacing: 0.2em; font-weight: 700; text-align: center; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
+  .card .thumb { position: relative; height: 220px; background: #fff; border-bottom: 1px solid var(--border); }
+  .card .thumb iframe { width: 200%; height: 200%; border: 0; transform: scale(0.5); transform-origin: 0 0; pointer-events: none; }
+  .card .body { padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .card .body b { font-size: 1.05rem; }
+  .card .body .by { color: var(--muted); font-size: 0.85rem; }
+  .card .body .desc { font-size: 0.9rem; color: #374151; }
+  .card .actions { display: flex; gap: 6px; padding: 0 14px 12px; }
+  .empty { color: var(--muted); text-align: center; padding: 60px 0; }
+  .qrbox { text-align: center; }
+  .qrbox .url { display: block; margin-top: 8px; word-break: break-all; font-family: ui-monospace, monospace; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<div class="gallery">
+  <header>
+    <h1>작품 갤러리 <small id="label"></small></h1>
+    <form class="code-form" id="codeForm">
+      <input id="codeInput" maxlength="8" placeholder="연수 코드">
+      <button class="btn btn-primary" type="submit">보기</button>
+    </form>
+    <button class="btn" id="btnRefresh">새로고침</button>
+    <button class="btn" id="btnJoinQr" title="참가자 입장용 QR">입장 QR</button>
+  </header>
+  <div class="grid" id="grid"></div>
+  <div class="empty hidden" id="empty">아직 저장된 작품이 없습니다. 참가자가 '저장·공유'를 누르면 여기에 나타납니다.</div>
+  <footer class="copyright">© 2026 Kim Youngdae. All rights reserved.</footer>
+</div>
+
+<div class="modal-backdrop hidden" id="qrModal">
+  <div class="modal qrbox">
+    <h2 id="qrTitle"></h2>
+    <div id="qr"></div>
+    <a class="url" id="qrUrl" target="_blank"></a>
+    <div class="actions" style="justify-content:center">
+      <button class="btn btn-primary" id="qrClose">닫기</button>
+    </div>
+  </div>
+</div>
+
+<script src="/vendor/qrcode.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const params = new URLSearchParams(location.search);
+  let code = (params.get("code") || "").toUpperCase();
+  $("codeInput").value = code;
+
+  $("codeForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    code = $("codeInput").value.trim().toUpperCase();
+    history.replaceState(null, "", `?code=${encodeURIComponent(code)}`);
+    loadGallery();
+  });
+  $("btnRefresh").addEventListener("click", loadGallery);
+  $("qrClose").addEventListener("click", () => $("qrModal").classList.add("hidden"));
+  $("btnJoinQr").addEventListener("click", () => {
+    if (!code) return alert("연수 코드를 먼저 입력하세요.");
+    showQr("참가자 입장", `${location.origin}/?code=${encodeURIComponent(code)}`);
+  });
+
+  function showQr(title, url) {
+    $("qrTitle").textContent = title;
+    $("qrUrl").textContent = url;
+    $("qrUrl").href = url;
+    const qr = qrcode(0, "M");
+    qr.addData(url);
+    qr.make();
+    $("qr").innerHTML = qr.createImgTag(6, 8);
+    $("qrModal").classList.remove("hidden");
+  }
+
+  async function loadGallery() {
+    if (!code) return;
+    const grid = $("grid");
+    grid.innerHTML = "";
+    $("empty").classList.add("hidden");
+    const res = await fetch(`/api/gallery?code=${encodeURIComponent(code)}`);
+    const data = await res.json();
+    if (!res.ok) {
+      $("label").textContent = "";
+      grid.innerHTML = `<div class="empty">${data.error || "불러오지 못했습니다."}</div>`;
+      return;
+    }
+    $("label").textContent = `${data.label} · ${data.code} · ${data.works.length}개`;
+    if (!data.works.length) $("empty").classList.remove("hidden");
+    data.works.forEach((w) => {
+      const url = `/w/${w.id}`;
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="thumb"><iframe sandbox="allow-scripts" loading="lazy" title=""></iframe></div>
+        <div class="body"><b></b><span class="by"></span><span class="desc"></span></div>
+        <div class="actions">
+          <a class="btn btn-sm btn-primary" target="_blank">크게 열기</a>
+          <button class="btn btn-sm" type="button">QR</button>
+        </div>`;
+      card.querySelector("iframe").src = url;
+      card.querySelector("b").textContent = w.title;
+      card.querySelector(".by").textContent = `${w.nickname} · ${new Date(w.updated_at * 1000).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}`;
+      card.querySelector(".desc").textContent = w.description || "";
+      card.querySelector("a").href = url;
+      card.querySelector("button").addEventListener("click", () => showQr(w.title, `${location.origin}${url}`));
+      grid.appendChild(card);
+    });
+  }
+  loadGallery();
+})();
+</script>
+</body>
+</html>
