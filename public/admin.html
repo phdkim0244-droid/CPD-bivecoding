@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>강사 대시보드</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+  .admin { max-width: 1200px; margin: 0 auto; padding: 20px 16px 60px; }
+  .admin h1 { font-size: 1.5rem; margin: 0 0 16px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 18px; }
+  .card h2 { margin: 0 0 12px; font-size: 1.1rem; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; align-items: end; }
+  .form-grid label { display: block; font-size: 0.82rem; color: var(--muted); margin-bottom: 4px; }
+  .form-grid input, .form-grid select { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  th { color: var(--muted); font-weight: 600; font-size: 0.8rem; }
+  tr.selected td { background: #eef2ff; }
+  .code-big { font-family: ui-monospace, monospace; font-weight: 800; font-size: 1.15rem; letter-spacing: 0.15em; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+  .pill.on { background: #dcfce7; color: #166534; }
+  .pill.off { background: #fee2e2; color: #991b1b; }
+  .pill.exp { background: #f3f4f6; color: #6b7280; }
+  .row-actions { display: flex; gap: 4px; flex-wrap: wrap; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .stat { background: #f8fafc; border-radius: 10px; padding: 10px 12px; }
+  .stat small { display: block; color: var(--muted); font-size: 0.78rem; }
+  .stat b { font-size: 1.3rem; }
+  .login { max-width: 380px; margin: 80px auto; }
+  .login input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; margin: 10px 0; }
+  .msg { color: var(--danger); min-height: 1.4em; }
+  .scroll { overflow-x: auto; }
+  details summary { cursor: pointer; color: var(--primary); }
+  .turn { border-bottom: 1px solid var(--border); padding: 8px 0; font-size: 0.9rem; }
+  .turn .p { font-weight: 600; }
+  .turn .r { color: #374151; white-space: pre-wrap; }
+  .turn .m { color: var(--muted); font-size: 0.78rem; }
+</style>
+</head>
+<body>
+<div class="admin">
+  <h1>강사 대시보드</h1>
+
+  <div class="card login" id="loginCard">
+    <h2>관리자 로그인</h2>
+    <form id="loginForm">
+      <input type="password" id="password" placeholder="관리자 비밀번호" required>
+      <button class="btn btn-primary" style="width:100%" type="submit">로그인</button>
+      <div class="msg" id="loginMsg"></div>
+    </form>
+  </div>
+
+  <div id="dash" class="hidden">
+    <div class="card">
+      <h2>새 연수 코드 만들기</h2>
+      <form class="form-grid" id="createForm">
+        <div><label>연수 이름</label><input id="label" value="바이브 코딩 연수" maxlength="60"></div>
+        <div><label>유효 시간(시간)</label><input id="hours" type="number" value="6" min="1"></div>
+        <div><label>1인당 요청 횟수</label><input id="maxTurns" type="number" value="60" min="1"></div>
+        <div><label>분당 요청 횟수</label><input id="perMinute" type="number" value="6" min="1"></div>
+        <div><label>예산 상한(USD)</label><input id="budget" type="number" value="30" min="1"></div>
+        <div><label>모델</label>
+          <select id="model">
+            <option value="claude-opus-5-5">Claude Opus 5.5 (기본)</option>
+            <option value="claude-sonnet-5-5">Claude Sonnet 5.5 (빠름·저렴)</option>
+          </select>
+        </div>
+        <div><label>사고 깊이</label>
+          <select id="effort">
+            <option value="low">낮음 (빠름)</option>
+            <option value="medium" selected>중간 (권장)</option>
+            <option value="high">높음</option>
+          </select>
+        </div>
+        <div><button class="btn btn-primary" type="submit" style="width:100%">코드 생성</button></div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>연수 코드 목록 <button class="btn btn-sm" id="btnReload" type="button">새로고침</button> <small id="rate" style="color:var(--muted)"></small></h2>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>코드</th><th>이름</th><th>상태</th><th>만료</th><th>참가</th><th>요청</th><th>작품</th><th>비용</th><th>모델/깊이</th><th></th></tr></thead>
+          <tbody id="codesBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card hidden" id="detailCard">
+      <h2>연수 상세: <span class="code-big" id="detailCode"></span> <span id="detailLabel"></span></h2>
+      <div class="stats" id="detailStats"></div>
+      <div class="row-actions" style="margin-bottom:14px">
+        <a class="btn btn-sm" id="linkGallery" target="_blank">갤러리 열기</a>
+        <a class="btn btn-sm" id="linkJoin" target="_blank">참가자 입장 링크</a>
+        <a class="btn btn-sm" id="linkCsv">대화 기록 CSV</a>
+        <button class="btn btn-sm" id="btnToggle" type="button"></button>
+        <button class="btn btn-sm" id="btnExtend" type="button">+3시간 연장</button>
+        <button class="btn btn-sm" id="btnBudget" type="button">예산 변경</button>
+        <button class="btn btn-sm" id="btnTurnsLimit" type="button">1인 횟수 변경</button>
+      </div>
+      <h3 style="font-size:1rem;margin:10px 0 6px">참가자</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>닉네임</th><th>요청</th><th>오류</th><th>작품</th><th>비용</th><th>최근 활동</th></tr></thead>
+          <tbody id="participantsBody"></tbody>
+        </table>
+      </div>
+      <h3 style="font-size:1rem;margin:16px 0 6px">작품</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>제목</th><th>작성자</th><th>설명</th><th>수정</th><th></th></tr></thead>
+          <tbody id="worksBody"></tbody>
+        </table>
+      </div>
+      <details style="margin-top:16px">
+        <summary>대화 기록 보기 (성찰·공유 활동용)</summary>
+        <div id="turnsBox"></div>
+      </details>
+    </div>
+  </div>
+</div>
+<script src="/admin.js"></script>
+</body>
+</html>

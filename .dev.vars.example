@@ -1,0 +1,5 @@
+# 이 파일을 .dev.vars 로 복사한 뒤 값을 채우세요. (.dev.vars 는 git에 올라가지 않습니다)
+ANTHROPIC_API_KEY=sk-ant-...
+ADMIN_PASSWORD=teacher1234
+# 1 로 두면 Claude를 호출하지 않고 모의 응답을 내보냅니다 (비용 없이 화면 흐름 점검용)
+MOCK_AI=0

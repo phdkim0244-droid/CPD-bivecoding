@@ -1,0 +1,24 @@
+name = "vibe-coding-workshop"
+main = "src/index.ts"
+compatibility_date = "2025-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+# 정적 파일(참가자 화면, 갤러리, 관리자 화면)
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+# D1 데이터베이스: `npx wrangler d1 create vibe-workshop-db` 실행 후 database_id를 바꿔 넣으세요.
+[[d1_databases]]
+binding = "DB"
+database_name = "vibe-workshop-db"
+database_id = "REPLACE_WITH_YOUR_DATABASE_ID"
+
+[vars]
+DEFAULT_MODEL = "claude-opus-5-5"
+DEFAULT_EFFORT = "medium"
+USD_TO_KRW = "1400"
+# 아래 비밀값은 `npx wrangler secret put <이름>`으로 넣습니다 (wrangler.toml에 쓰지 마세요).
+#   ANTHROPIC_API_KEY  - Claude API 키
+#   ADMIN_PASSWORD     - 강사 대시보드 비밀번호
+# 로컬 개발 시에는 .dev.vars 파일에 넣습니다 (.dev.vars.example 참고).
