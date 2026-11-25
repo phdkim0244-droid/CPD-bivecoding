@@ -24,6 +24,8 @@ body {
 button, input, textarea, select { font: inherit; }
 button { cursor: pointer; }
 .hidden { display: none !important; }
+.copyright { color: var(--muted); font-size: 0.78rem; text-align: center; padding: 6px 12px; }
+.copyright a { color: inherit; text-decoration: none; }
 
 /* 입장 화면 */
 .join {
@@ -78,8 +80,9 @@ button { cursor: pointer; }
 .app {
   height: 100vh;
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto 1fr auto;
 }
+.app .copyright { background: var(--panel); border-top: 1px solid var(--border); padding: 4px 12px; }
 .topbar {
   display: flex;
   align-items: center;

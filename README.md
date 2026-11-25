@@ -108,6 +108,10 @@ npm run dev
 - 앱 생성 규칙(시스템 프롬프트): `src/claude.ts`의 `SYSTEM_PROMPT`
 - 기본 모델·환율: `wrangler.toml`의 `[vars]`
 
+## 저작권
+
+© 2026 Kim Youngdae. All rights reserved.
+
 ## 알아 둘 점
 
 - 같은 연수 코드 안에서 닉네임은 하나만 쓸 수 있습니다. 기기를 바꾸면 다른 닉네임으로 입장합니다.
