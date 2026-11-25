@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>바이브 코딩 체험</title>
+<link rel="icon" type="image/png" href="/favicon.png">
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -11,6 +12,7 @@
 <!-- 입장 화면 -->
 <section id="join" class="join">
   <form class="join-card" id="joinForm">
+    <img class="logo-big" src="/logo.png" alt="2030 꼬마과학자 교실">
     <h1>바이브 코딩 체험</h1>
     <p class="sub">가입 없이, 연수 코드와 닉네임만으로 시작합니다.</p>
     <label for="code">연수 코드</label>
@@ -20,14 +22,14 @@
     <button class="btn btn-primary" type="submit">시작하기</button>
     <div class="msg" id="joinMsg"></div>
     <div class="foot">강사용: <a href="/admin.html">대시보드</a> · <a href="/gallery.html">갤러리</a></div>
-    <div class="copyright">© 2026 Kim Youngdae. All rights reserved.</div>
+    <div class="copyright">2030 꼬마과학자 교실 · © 2026 Kim Youngdae. All rights reserved.</div>
   </form>
 </section>
 
 <!-- 작업 화면 -->
 <section id="app" class="app hidden">
   <header class="topbar">
-    <div class="brand">바이브 코딩 체험 <small id="labelText"></small></div>
+    <div class="brand"><img class="logo-sm" src="/logo.png" alt="2030 꼬마과학자 교실">바이브 코딩 체험 <small id="labelText"></small></div>
     <span class="usage">요청 <b id="turnsUsed">0</b> / <span id="maxTurns">-</span>회 · <span id="nickText"></span></span>
     <button class="btn btn-sm" id="btnNew" title="대화와 앱을 비우고 처음부터">새로 시작</button>
     <button class="btn btn-sm" id="btnMyWorks">내 작품</button>
@@ -67,7 +69,7 @@
       </div>
     </div>
   </div>
-  <footer class="copyright">© 2026 Kim Youngdae. All rights reserved.</footer>
+  <footer class="copyright">2030 꼬마과학자 교실 · © 2026 Kim Youngdae. All rights reserved.</footer>
 </section>
 
 <!-- 저장 모달 -->

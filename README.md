@@ -110,7 +110,9 @@ npm run dev
 
 ## 저작권
 
-© 2026 Kim Youngdae. All rights reserved.
+2030 꼬마과학자 교실 · © 2026 Kim Youngdae. All rights reserved.
+
+로고 파일은 `public/logo.png`(화면용)와 `public/favicon.png`(브라우저 탭)이며, 같은 이름으로 바꿔 넣으면 교체됩니다.
 
 ## 알아 둘 점
 
